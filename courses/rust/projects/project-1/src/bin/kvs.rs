@@ -1,49 +1,53 @@
-use clap::{App, AppSettings, Arg, SubCommand};
-use std::process::exit;
+use std::process;
 
+use clap::{arg, command, Command};
 fn main() {
-    let matches = App::new(env!("CARGO_PKG_NAME"))
-        .version(env!("CARGO_PKG_VERSION"))
-        .author(env!("CARGO_PKG_AUTHORS"))
-        .about(env!("CARGO_PKG_DESCRIPTION"))
-        .setting(AppSettings::DisableHelpSubcommand)
-        .setting(AppSettings::SubcommandRequiredElseHelp)
-        .setting(AppSettings::VersionlessSubcommands)
+    // 关于为clap crate 启用依赖的方法
+
+    // matches 顾名思义就是匹配项
+
+    // 首先要设计
+    let matches = command!()
         .subcommand(
-            SubCommand::with_name("set")
-                .about("Set the value of a string key to a string")
-                .arg(Arg::with_name("KEY").help("A string key").required(true))
-                .arg(
-                    Arg::with_name("VALUE")
-                        .help("The string value of the key")
-                        .required(true),
-                ),
+            // sub command ==> set, rm, get
+            Command::new("set")
+                .about("set the key and value pair")
+                .arg(arg!(<key> "the key"))
+                .arg(arg!(<value> "the value")),
         )
         .subcommand(
-            SubCommand::with_name("get")
-                .about("Get the string value of a given string key")
-                .arg(Arg::with_name("KEY").help("A string key").required(true)),
+            Command::new("get")
+                .about("get the value of this key")
+                .arg(arg!(<key> "the key")),
         )
         .subcommand(
-            SubCommand::with_name("rm")
-                .about("Remove a given key")
-                .arg(Arg::with_name("KEY").help("A string key").required(true)),
+            Command::new("rm")
+                .about("remove the value of this key")
+                .arg(arg!(<key> "the key")),
         )
         .get_matches();
+    // 关键看学习match语法, 因为返回的是一个Option
 
+    // match 要求...覆盖完全所有的pattern, 但有些情况是不可能被cover完全的
     match matches.subcommand() {
-        ("set", Some(_matches)) => {
-            eprintln!("unimplemented");
-            exit(1);
+        Some(("set", _)) => {
+            panic!("unimplemented");
         }
-        ("get", Some(_matches)) => {
-            eprintln!("unimplemented");
-            exit(1);
+        Some(("get", _)) => {
+            panic!("unimplemented");
         }
-        ("rm", Some(_matches)) => {
-            eprintln!("unimplemented");
-            exit(1);
+        Some(("rm", _)) => {
+            panic!("unimplemented");
         }
-        _ => unreachable!(),
+        _ => {}
     }
+    // process::
+    process::exit(1);
+}
+
+// 注意看bin, src下面有一个bin ==> 有一个main
+
+#[test]
+fn test_bin() {
+    println!("test_bin");
 }
