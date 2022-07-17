@@ -15,6 +15,7 @@ use std::collections::HashMap;
 //         panic!("remove unimplemented");
 //     }
 // }
+#[derive(Default)]
 pub struct KvStore {
     mp: HashMap<String, String>,
 }
