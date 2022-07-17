@@ -1,15 +1,22 @@
 use std::process;
 
-use clap::{arg, command, Command};
+use clap::{arg, Command};
 fn main() {
     // 关于为clap crate 启用依赖的方法
 
     // matches 顾名思义就是匹配项
 
     // 首先要设计
-    let matches = command!()
+    // 关于command!的本质
+
+    // 关于into()函数, 实际上就是把一个type转化为xxx
+    let matches = Command::new(env!("CARGO_PKG_NAME"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .version(env!("CARGO_PKG_VERSION"))
+        .about(env!("CARGO_PKG_DESCRIPTION"))
         .subcommand(
             // sub command ==> set, rm, get
+            // 要启动env必须要在crate的feature中启动
             Command::new("set")
                 .about("set the key and value pair")
                 .arg(arg!(<key> "the key"))
