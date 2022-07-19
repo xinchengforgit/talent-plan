@@ -1,95 +1,72 @@
-use clap::AppSettings;
-use kvs::{KvsClient, Result};
-use std::net::SocketAddr;
-use std::process::exit;
-use structopt::StructOpt;
+use std::process;
 
-const DEFAULT_LISTENING_ADDRESS: &str = "127.0.0.1:4000";
-const ADDRESS_FORMAT: &str = "IP:PORT";
-
-#[derive(StructOpt, Debug)]
-#[structopt(
-    name = "kvs-client",
-    raw(global_settings = "&[\
-                           AppSettings::DisableHelpSubcommand,\
-                           AppSettings::VersionlessSubcommands]")
-)]
-struct Opt {
-    #[structopt(subcommand)]
-    command: Command,
-}
-
-#[derive(StructOpt, Debug)]
-enum Command {
-    #[structopt(name = "get", about = "Get the string value of a given string key")]
-    Get {
-        #[structopt(name = "KEY", help = "A string key")]
-        key: String,
-        #[structopt(
-            long,
-            help = "Sets the server address",
-            raw(value_name = "ADDRESS_FORMAT"),
-            raw(default_value = "DEFAULT_LISTENING_ADDRESS"),
-            parse(try_from_str)
-        )]
-        addr: SocketAddr,
-    },
-    #[structopt(name = "set", about = "Set the value of a string key to a string")]
-    Set {
-        #[structopt(name = "KEY", help = "A string key")]
-        key: String,
-        #[structopt(name = "VALUE", help = "The string value of the key")]
-        value: String,
-        #[structopt(
-            long,
-            help = "Sets the server address",
-            raw(value_name = "ADDRESS_FORMAT"),
-            raw(default_value = "DEFAULT_LISTENING_ADDRESS"),
-            parse(try_from_str)
-        )]
-        addr: SocketAddr,
-    },
-    #[structopt(name = "rm", about = "Remove a given string key")]
-    Remove {
-        #[structopt(name = "KEY", help = "A string key")]
-        key: String,
-        #[structopt(
-            long,
-            help = "Sets the server address",
-            raw(value_name = "ADDRESS_FORMAT"),
-            raw(default_value = "DEFAULT_LISTENING_ADDRESS"),
-            parse(try_from_str)
-        )]
-        addr: SocketAddr,
-    },
-}
-
+use clap::{arg, Arg, Command};
 fn main() {
-    let opt = Opt::from_args();
-    if let Err(e) = run(opt) {
-        eprintln!("{}", e);
-        exit(1);
-    }
-}
+    // 关于为clap crate 启用依赖的方法
 
-fn run(opt: Opt) -> Result<()> {
-    match opt.command {
-        Command::Get { key, addr } => {
-            let mut client = KvsClient::connect(addr)?;
-            if let Some(value) = client.get(key)? {
-                println!("{}", value);
-            } else {
-                println!("Key not found");
-            }
+    // matches 顾名思义就是匹配项
+
+    // 首先要设计
+    // 关于command!的本质
+    // 要不就用这个吧, 有空再把这个改成structOpt的方式
+    // 关于into()函数, 实际上就是把一个type转化为xxx
+    let matches = Command::new(env!("CARGO_PKG_NAME"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .version(env!("CARGO_PKG_VERSION"))
+        .about("kvs-client")
+        .subcommand(
+            // sub command ==> set, rm, get
+            // 要启动env必须要在crate的feature中启动
+            Command::new("set")
+                .about("set the key and value pair")
+                .arg(arg!(<key> "the key"))
+                .arg(arg!(<value> "the value"))
+                .arg(
+                    Arg::new("ip-port")
+                        .long("ip_addr")
+                        .takes_value(true)
+                        .help("set the ip address"),
+                ),
+        )
+        .subcommand(
+            Command::new("get")
+                .about("get the value of this key")
+                .arg(arg!(<key> "the key"))
+                .arg(
+                    Arg::new("ip-port")
+                        .long("ip_addr")
+                        .takes_value(true)
+                        .help("set the ip address"),
+                ),
+        )
+        .subcommand(
+            Command::new("rm")
+                .about("remove the value of this key")
+                .arg(arg!(<key> "the key"))
+                // 关键在于不能使用- hypens连字符
+                .arg(
+                    Arg::new("ip-port")
+                        .long("ip_addr")
+                        .takes_value(true)
+                        .help("set the ip address"),
+                ),
+        )
+        .get_matches();
+    // 关键看学习match语法, 因为返回的是一个Option
+
+    // match 要求...覆盖完全所有的pattern, 但有些情况是不可能被cover完全的
+    match matches.subcommand() {
+        Some(("set", _)) => {
+            panic!("unimplemented");
         }
-        Command::Set { key, value, addr } => {
-            let mut client = KvsClient::connect(addr)?;
-            client.set(key, value)?;
+        Some(("get", _)) => {
+            panic!("unimplemented");
         }
-        Command::Remove { key, addr } => {
-            let mut client = KvsClient::connect(addr)?;
-            client.remove(key)?;
+        Some(("rm", _)) => {
+            panic!("unimplemented");
         }
+        _ => {}
     }
-    Ok(())
+    // process::
+    process::exit(1);
 }
