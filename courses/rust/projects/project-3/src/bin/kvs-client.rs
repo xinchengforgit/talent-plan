@@ -1,6 +1,6 @@
-use std::process;
-
 use clap::{arg, Arg, Command};
+use std::net::TcpStream;
+use std::process;
 fn main() {
     // 关于为clap crate 启用依赖的方法
 
@@ -57,15 +57,24 @@ fn main() {
     // match 要求...覆盖完全所有的pattern, 但有些情况是不可能被cover完全的
     match matches.subcommand() {
         Some(("set", _)) => {
-            panic!("unimplemented");
+            if let Ok(_) = TcpStream::connect("127.0.0.1:4000") {
+                println!("hello, server");
+            }
         }
         Some(("get", _)) => {
-            panic!("unimplemented");
+            if let Ok(_) = TcpStream::connect("127.0.0.1:4000") {
+                println!("hello, server");
+            }
         }
         Some(("rm", _)) => {
-            panic!("unimplemented");
+            if let Ok(_) = TcpStream::connect("127.0.0.1:4000") {
+                println!("hello, server");
+            }
         }
         _ => {}
+    }
+    if let Ok(_) = TcpStream::connect("127.0.0.1:4000") {
+        println!("hello, server");
     }
     // process::
     process::exit(1);

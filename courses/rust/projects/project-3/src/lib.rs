@@ -1,12 +1,7 @@
-#![deny(missing_docs)]
-//! A simple key/value store.
-
-pub use client::KvsClient;
-pub use engines::{KvStore, KvsEngine, SledKvsEngine};
-pub use error::{KvsError, Result};
-pub use server::KvsServer;
-mod client;
-mod common;
-mod engines;
-mod error;
+use std::io::Error;
+// 可以用作re-export
+pub use engines::KvsEngine;
+mod engines; // 必须要是engines.rs 或者engines/mod.rs
 mod server;
+pub use server::KvsServer;
+pub type Result<T> = std::result::Result<T, Error>;
